@@ -1,0 +1,571 @@
+﻿%% knu-fcc-style.sty
+%% LaTeX style for reports / course papers according to
+%% Faculty of Computer Science and Cybernetics,
+%% Taras Shevchenko National University of Kyiv guidelines.
+%%
+%% Recommended usage:
+%%   \documentclass[14pt]{extarticle}
+%%   \usepackage{knu-fcc-style}
+%%   Compile with XeLaTeX or LuaLaTeX.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{knu-fcc-style}[2026/05/03 KNU FCC document style]
+
+% -----------------------------------------------------------------------------
+% Engine and language setup
+% -----------------------------------------------------------------------------
+\RequirePackage{iftex}
+
+\ifPDFTeX
+  \RequirePackage[T2A]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+  \RequirePackage[ukrainian]{babel}
+  \DeclareUnicodeCharacter{2265}{$\ge$}
+  \DeclareUnicodeCharacter{2264}{$\le$}
+  \DeclareUnicodeCharacter{2192}{$\rightarrow$}
+  \DeclareUnicodeCharacter{2014}{---}
+  \DeclareUnicodeCharacter{2018}{`}
+  \DeclareUnicodeCharacter{2019}{'}
+  \DeclareUnicodeCharacter{201C}{``}
+  \DeclareUnicodeCharacter{201D}{''}
+  \DeclareUnicodeCharacter{00A0}{~}
+  \PackageWarningNoLine{knu-fcc-style}{For closest compliance with Times New Roman, compile with XeLaTeX or LuaLaTeX}
+\else
+  \RequirePackage{fontspec}
+  \RequirePackage{polyglossia}
+  \setdefaultlanguage{ukrainian}
+  \IfFontExistsTF{Times New Roman}{%
+    \setmainfont{Times New Roman}
+  }{%
+    \IfFontExistsTF{Tinos}{%
+      \setmainfont{Tinos}
+      \PackageWarningNoLine{knu-fcc-style}{Times New Roman not found; using Tinos as a metrically compatible fallback}%
+    }{%
+      \IfFontExistsTF{TeXGyreTermesX-Regular.otf}{%
+        \setmainfont{TeXGyreTermesX}[
+          Extension=.otf,
+          UprightFont=*-Regular,
+          BoldFont=*-Bold,
+          ItalicFont=*-Italic,
+          BoldItalicFont=*-BoldItalic
+        ]%
+        \PackageWarningNoLine{knu-fcc-style}{Times New Roman not found; using TeX Gyre Termes X as a fallback}%
+      }{%
+        \setmainfont{Latin Modern Roman}%
+        \PackageWarningNoLine{knu-fcc-style}{Times New Roman not found; using Latin Modern Roman as a fallback}%
+      }%
+    }%
+  }%
+  \IfFontExistsTF{Tinos}{%
+    \newfontfamily\cyrillicfont{Tinos}[Script=Cyrillic]
+  }{%
+    \IfFontExistsTF{FreeSerif}{%
+      \newfontfamily\cyrillicfont{FreeSerif}[Script=Cyrillic]
+    }{%
+      \IfFontExistsTF{Times New Roman}{%
+        \newfontfamily\cyrillicfont{Times New Roman}[Script=Cyrillic]
+      }{%
+        \IfFontExistsTF{TeXGyreTermesX-Regular.otf}{%
+          \newfontfamily\cyrillicfont{TeXGyreTermesX}[
+            Script=Cyrillic,
+            Extension=.otf,
+            UprightFont=*-Regular,
+            BoldFont=*-Bold,
+            ItalicFont=*-Italic,
+            BoldItalicFont=*-BoldItalic
+          ]
+        }{%
+          \newfontfamily\cyrillicfont{CMU Serif}[Script=Cyrillic]
+        }%
+      }%
+    }%
+  }%
+  \IfFontExistsTF{Consolas}{%
+    \setmonofont{Consolas}
+    \newfontfamily\cyrillicfonttt{Consolas}[Script=Cyrillic]
+  }{%
+    \IfFontExistsTF{DejaVu Sans Mono}{%
+      \setmonofont{DejaVu Sans Mono}
+      \newfontfamily\cyrillicfonttt{DejaVu Sans Mono}[Script=Cyrillic]
+    }{%
+      \IfFontExistsTF{Courier New}{%
+        \setmonofont{Courier New}
+        \newfontfamily\cyrillicfonttt{Courier New}[Script=Cyrillic]
+      }{%
+        \setmonofont{Latin Modern Mono}
+      }%
+    }%
+  }
+\fi
+
+\RequirePackage{csquotes}
+
+% -----------------------------------------------------------------------------
+% Page layout: A4, margins, paragraph indentation, spacing
+% -----------------------------------------------------------------------------
+\RequirePackage[
+  a4paper,
+  top=20mm,
+  bottom=20mm,
+  left=25mm,
+  right=10mm,
+  includehead=false
+]{geometry}
+
+\RequirePackage{setspace}
+\RequirePackage{indentfirst}
+
+\onehalfspacing
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{0pt}
+\setlength{\emergencystretch}{3em}
+
+% -----------------------------------------------------------------------------
+% Page numbering: top right; title page should use \thispagestyle{empty}
+% -----------------------------------------------------------------------------
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{17pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[R]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+
+\newcommand{\KNUHidePageNumber}{\thispagestyle{empty}}
+
+% -----------------------------------------------------------------------------
+% Section headings
+% - structural parts and sections: new page, centered, bold, uppercase
+% - subsections and lower levels: paragraph indent, bold, no final dot
+% -----------------------------------------------------------------------------
+\RequirePackage{titlesec}
+\RequirePackage{etoolbox}
+\RequirePackage{textcase}
+
+\titleformat{\section}[block]
+  {\normalfont\normalsize\bfseries\centering}
+  {\thesection}
+  {1em}
+  {\MakeTextUppercase}
+
+\titleformat{name=\section,numberless}[block]
+  {\normalfont\normalsize\bfseries\centering}
+  {}
+  {0pt}
+  {\MakeTextUppercase}
+
+\titlespacing*{\section}
+  {0pt}
+  {0pt}
+  {2\baselineskip}
+
+\titleformat{\subsection}[block]
+  {\normalfont\normalsize\bfseries}
+  {\thesubsection}
+  {1em}
+  {}
+
+\titlespacing*{\subsection}
+  {\parindent}
+  {2\baselineskip}
+  {2\baselineskip}
+
+\titleformat{\subsubsection}[block]
+  {\normalfont\normalsize\bfseries}
+  {\thesubsubsection}
+  {1em}
+  {}
+
+\titlespacing*{\subsubsection}
+  {\parindent}
+  {2\baselineskip}
+  {2\baselineskip}
+
+\titleformat{\paragraph}[block]
+  {\normalfont\normalsize\bfseries}
+  {\theparagraph}
+  {1em}
+  {}
+
+\titlespacing*{\paragraph}
+  {\parindent}
+  {2\baselineskip}
+  {2\baselineskip}
+
+\titleformat{\subparagraph}[block]
+  {\normalfont\normalsize\bfseries}
+  {\thesubparagraph}
+  {1em}
+  {}
+
+\titlespacing*{\subparagraph}
+  {\parindent}
+  {2\baselineskip}
+  {2\baselineskip}
+
+% Every section/structural part starts on a new page.
+\pretocmd{\section}{\clearpage}{}{}
+\newcommand{\KNUContents}{\clearpage\tableofcontents}
+
+% Helper for unnumbered structural parts that should appear in the table of contents.
+\newcommand{\KNUUnnumberedSection}[1]{%
+  \section*{#1}%
+  \addcontentsline{toc}{section}{\MakeTextUppercase{#1}}%
+}
+
+% Ukrainian appendix section letters for reports that need appendix labels
+% "А", "Б", "В", ... instead of Latin letters.
+\newcommand{\KNU@ukrappendixletter}[1]{%
+  \ifcase#1\or А\or Б\or В\or Г\or Д\or Е\or Ж\or З\or И\or К\or Л\or М\or Н\or П\or Р\or С\or Т\or У\or Ф\or Х\or Ц\or Ш\or Ю\or Я\else \Alph{section}\fi
+}
+
+\newcommand{\KNUAppendixLetters}{%
+  \renewcommand{\thesection}{\KNU@ukrappendixletter{\value{section}}}%
+  \renewcommand{\theHsection}{appendix.\arabic{section}}%
+}
+
+\newcommand{\ukrappendixletter}[1]{\KNU@ukrappendixletter{#1}}
+
+% -----------------------------------------------------------------------------
+% Names of structural elements
+% -----------------------------------------------------------------------------
+\renewcommand{\contentsname}{ЗМІСТ}
+\renewcommand{\refname}{ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАННЯ}
+
+% -----------------------------------------------------------------------------
+% Figures, tables, equations
+% -----------------------------------------------------------------------------
+\RequirePackage{amsmath}
+\RequirePackage{caption}
+\RequirePackage{chngcntr}
+\RequirePackage{float}
+\RequirePackage{lastpage}
+\RequirePackage{totcount}
+
+% Numbering within sections: Figure 2.1, Table 2.1, Formula (2.1)
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\counterwithin{equation}{section}
+
+\renewcommand{\figurename}{Рисунок}
+\renewcommand{\tablename}{Таблиця}
+
+\DeclareCaptionLabelSeparator{knudash}{~---~}
+
+\captionsetup{
+  font=normalsize,
+  labelfont=normalfont,
+  labelsep=knudash
+}
+
+\captionsetup[figure]{
+  name=Рисунок,
+  justification=centering,
+  singlelinecheck=true,
+  position=bottom,
+  skip=\baselineskip
+}
+
+\captionsetup[table]{
+  name=Таблиця,
+  justification=raggedright,
+  singlelinecheck=false,
+  position=top,
+  skip=\baselineskip
+}
+
+\makeatletter
+\def\KNU@table@here{\@float{table}[H]}
+\def\KNU@table@ignore[#1]{\KNU@table@here}
+\renewcommand{\table}{\@ifnextchar[{\KNU@table@ignore}{\KNU@table@here}}
+\makeatother
+
+% -----------------------------------------------------------------------------
+% Lists: first-level bullet list as dash; compact but readable spacing
+% -----------------------------------------------------------------------------
+\RequirePackage{enumitem}
+\setlist[itemize,1]{label=—,leftmargin=2\parindent,itemsep=0pt,topsep=0pt,parsep=0pt}
+\setlist[itemize,2]{label=—,leftmargin=2\parindent,itemsep=0pt,topsep=0pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=2\parindent,itemsep=0pt,topsep=0pt,parsep=0pt}
+
+% -----------------------------------------------------------------------------
+% URLs and hyperlinks
+% -----------------------------------------------------------------------------
+\RequirePackage[hidelinks]{hyperref}
+\RequirePackage{url}
+\urlstyle{same}
+
+% -----------------------------------------------------------------------------
+% Verbatim code blocks and source-file inclusion
+% -----------------------------------------------------------------------------
+\RequirePackage{xcolor}
+\RequirePackage{fvextra}
+
+\DefineVerbatimEnvironment{KNUCodeBlock}{Verbatim}{
+  breaklines=true,
+  breaksymbolleft={},
+  fontsize=\footnotesize,
+  frame=single,
+  rulecolor=\color{black}
+}
+
+\newcommand{\KNUCodeFile}[1]{%
+  \VerbatimInput[
+    breaklines=true,
+    breaksymbolleft={},
+    fontsize=\footnotesize,
+    frame=single,
+    rulecolor=\color{black}
+  ]{#1}%
+}
+
+\DefineVerbatimEnvironment{CodeBlock}{Verbatim}{
+  breaklines=true,
+  breaksymbolleft={},
+  fontsize=\footnotesize,
+  frame=single,
+  rulecolor=\color{black}
+}
+\newcommand{\CodeFile}[1]{\KNUCodeFile{#1}}
+
+% -----------------------------------------------------------------------------
+% Table of contents formatting
+% -----------------------------------------------------------------------------
+\RequirePackage{tocloft}
+\setlength{\cftbeforetoctitleskip}{0pt}
+\setlength{\cftaftertoctitleskip}{2\baselineskip}
+\setlength{\cftbeforesecskip}{0pt}
+\setlength{\cftbeforesubsecskip}{0pt}
+\renewcommand{\cfttoctitlefont}{\hfill\normalfont\normalsize\bfseries}
+\renewcommand{\cftaftertoctitle}{\hfill}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsecfont}{\normalfont}
+\renewcommand{\cftsecpagefont}{\normalfont}
+
+% -----------------------------------------------------------------------------
+% Useful environments / commands
+% -----------------------------------------------------------------------------
+\RequirePackage{keyval}
+
+\makeatletter
+\newcommand{\KNU@title@defaults}{%
+  \def\KNU@title@ministry{}%
+  \def\KNU@title@university{Київський національний університет\\імені Тараса Шевченка}%
+  \def\KNU@title@faculty{Факультет комп'ютерних наук та кібернетики}%
+  \def\KNU@title@department{}%
+  \def\KNU@title@type{}%
+  \def\KNU@title@degree{}%
+  \def\KNU@title@specialty{}%
+  \def\KNU@title@program{}%
+  \def\KNU@title@titleLabel{на тему:}%
+  \def\KNU@title@title{}%
+  \def\KNU@title@studentInfo{}%
+  \def\KNU@title@student{}%
+  \def\KNU@title@studentSignature{true}%
+  \def\KNU@title@supervisorInfo{}%
+  \def\KNU@title@supervisor{}%
+  \def\KNU@title@supervisorSignature{true}%
+  \def\KNU@title@declaration{}%
+  \def\KNU@title@declarationSigner{Студент}%
+  \def\KNU@title@admission{}%
+  \def\KNU@title@headOfDepartment{}%
+  \def\KNU@title@city{Київ}%
+  \def\KNU@title@year{\the\year}%
+}
+
+\define@key{KNUTitle}{ministry}{\def\KNU@title@ministry{#1}}
+\define@key{KNUTitle}{university}{\def\KNU@title@university{#1}}
+\define@key{KNUTitle}{faculty}{\def\KNU@title@faculty{#1}}
+\define@key{KNUTitle}{department}{\def\KNU@title@department{#1}}
+\define@key{KNUTitle}{type}{\def\KNU@title@type{#1}}
+\define@key{KNUTitle}{degree}{\def\KNU@title@degree{#1}}
+\define@key{KNUTitle}{specialty}{\def\KNU@title@specialty{#1}}
+\define@key{KNUTitle}{program}{\def\KNU@title@program{#1}}
+\define@key{KNUTitle}{titleLabel}{\def\KNU@title@titleLabel{#1}}
+\define@key{KNUTitle}{title}{\def\KNU@title@title{#1}}
+\define@key{KNUTitle}{studentInfo}{\def\KNU@title@studentInfo{#1}}
+\define@key{KNUTitle}{student}{\def\KNU@title@student{#1}}
+\define@key{KNUTitle}{studentSignature}{\def\KNU@title@studentSignature{#1}}
+\define@key{KNUTitle}{supervisorInfo}{\def\KNU@title@supervisorInfo{#1}}
+\define@key{KNUTitle}{supervisor}{\def\KNU@title@supervisor{#1}}
+\define@key{KNUTitle}{supervisorSignature}{\def\KNU@title@supervisorSignature{#1}}
+\define@key{KNUTitle}{declaration}{\def\KNU@title@declaration{#1}}
+\define@key{KNUTitle}{declarationSigner}{\def\KNU@title@declarationSigner{#1}}
+\define@key{KNUTitle}{admission}{\def\KNU@title@admission{#1}}
+\define@key{KNUTitle}{headOfDepartment}{\def\KNU@title@headOfDepartment{#1}}
+\define@key{KNUTitle}{city}{\def\KNU@title@city{#1}}
+\define@key{KNUTitle}{year}{\def\KNU@title@year{#1}}
+
+\newcommand{\KNU@SignatureBox}{%
+  \begin{minipage}[t]{0.23\textwidth}
+    \centering
+    \vspace{\baselineskip}
+    \rule{0.9\linewidth}{0.4pt}\\[-0.2ex]
+    {\footnotesize(підпис)}
+  \end{minipage}%
+}
+
+\newcommand{\KNU@TitlePersonBlock}[2]{%
+  \noindent
+  \begin{minipage}[t]{0.68\textwidth}
+    \raggedright
+    #1
+  \end{minipage}%
+  \ifdefstring{#2}{false}{}{\hfill\KNU@SignatureBox}\par
+}
+
+\newcommand{\KNUTitlePageMake}[1][]{%
+  \KNU@title@defaults
+  \setkeys{KNUTitle}{#1}%
+  \clearpage
+  \thispagestyle{empty}%
+  \begingroup
+    \begin{center}
+      \ifx\KNU@title@ministry\@empty\else\KNU@title@ministry\\\fi
+      \parbox{0.95\textwidth}{%
+        \centering\bfseries\MakeTextUppercase{\KNU@title@university}\par
+      }\\
+      \KNU@title@faculty
+      \ifx\KNU@title@department\@empty\else\\\KNU@title@department\fi
+    \end{center}
+
+    \vspace{2\baselineskip}
+
+    \begin{center}
+      \ifx\KNU@title@type\@empty\else\textbf{\KNU@title@type}\\\fi
+      \ifx\KNU@title@degree\@empty\else на здобуття ступеня \KNU@title@degree\\\fi
+      \ifx\KNU@title@specialty\@empty\else за спеціальністю \KNU@title@specialty\\\fi
+      \ifx\KNU@title@program\@empty\else ОПП \KNU@title@program\\\fi
+      \ifx\KNU@title@title\@empty\else \KNU@title@titleLabel\\[0.5\baselineskip]\textbf{\MakeTextUppercase{\KNU@title@title}}\fi
+    \end{center}
+
+    \vspace{2\baselineskip}
+
+    \ifx\KNU@title@studentInfo\@empty\else
+      \KNU@TitlePersonBlock{%
+        \KNU@title@studentInfo\par
+        \ifx\KNU@title@student\@empty\else\textbf{\KNU@title@student}\par\fi
+      }{\KNU@title@studentSignature}
+    \fi
+
+    \ifx\KNU@title@supervisorInfo\@empty\else
+      \vspace{\baselineskip}
+      \KNU@TitlePersonBlock{%
+        \KNU@title@supervisorInfo\par
+        \ifx\KNU@title@supervisor\@empty\else\textbf{\KNU@title@supervisor}\par\fi
+      }{\KNU@title@supervisorSignature}
+    \fi
+
+    \ifx\KNU@title@declaration\@empty\else
+      \vspace{\baselineskip}
+      \KNU@TitlePersonBlock{%
+        \hfill\begin{minipage}[t]{0.72\linewidth}
+          \raggedright
+          \KNU@title@declaration\par
+          \KNU@title@declarationSigner
+        \end{minipage}
+      }{true}
+    \fi
+
+    \ifx\KNU@title@admission\@empty\else
+      \vspace{\baselineskip}
+      \KNU@TitlePersonBlock{%
+        \KNU@title@admission\par
+        \ifx\KNU@title@headOfDepartment\@empty\else\KNU@title@headOfDepartment\par\fi
+      }{true}
+    \fi
+
+    \vfill
+
+    \begin{center}
+      \MakeTextUppercase{\KNU@title@city}\ \KNU@title@year
+    \end{center}
+    \par
+  \endgroup
+  \clearpage
+}
+\makeatother
+
+\newenvironment{KNUExample}{%
+  \par\vspace{2\baselineskip}%
+  \noindent\textit{Приклад}\par
+}{%
+  \par\vspace{2\baselineskip}%
+}
+
+\newcommand{\KNUKeywords}[1]{%
+  \noindent\textbf{Ключові слова:} #1\par
+}
+
+
+% -----------------------------------------------------------------------------
+% Work statistics for abstract (pages, figures, tables, appendices, sources)
+% -----------------------------------------------------------------------------
+\newcounter{KNUFigureTotal}
+\newcounter{KNUTableTotal}
+\newcounter{KNUAppendixTotal}
+\newcounter{KNUSourceTotal}
+\regtotcounter{KNUFigureTotal}
+\regtotcounter{KNUTableTotal}
+\regtotcounter{KNUAppendixTotal}
+\regtotcounter{KNUSourceTotal}
+
+\makeatletter
+\newif\ifKNU@inappendix
+\KNU@inappendixfalse
+
+\pretocmd{\figure}{\stepcounter{KNUFigureTotal}}{}{}
+\pretocmd{\KNU@table@here}{\stepcounter{KNUTableTotal}}{}{}
+
+\let\KNU@origappendix\appendix
+\renewcommand{\appendix}{%
+  \KNU@inappendixtrue
+  \KNU@origappendix
+}
+
+\let\KNU@origsection\section
+\renewcommand{\section}{%
+  \ifKNU@inappendix
+    \stepcounter{KNUAppendixTotal}%
+  \fi
+  \KNU@origsection
+}
+
+\let\KNU@origbibitem\bibitem
+\renewcommand{\bibitem}{%
+  \stepcounter{KNUSourceTotal}%
+  \KNU@origbibitem
+}
+\makeatother
+
+\newcommand{\KNUWorkStats}{%
+  \pageref{LastPage}~с., \total{KNUFigureTotal}~рис., \total{KNUTableTotal}~табл., \total{KNUAppendixTotal}~дод., \total{KNUSourceTotal}~джерела.
+}
+% -----------------------------------------------------------------------------
+% Recommended class warning
+% -----------------------------------------------------------------------------
+\makeatletter
+\AtBeginDocument{%
+  \@ifundefined{captionsukrainian}{}{%
+    \gappto\captionsukrainian{%
+      \renewcommand{\contentsname}{ЗМІСТ}%
+      \renewcommand{\refname}{ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАННЯ}%
+    }%
+  }%
+  \renewcommand{\contentsname}{ЗМІСТ}%
+  \renewcommand{\refname}{ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАННЯ}%
+  \pdfstringdefDisableCommands{\def\MakeTextUppercase#1{#1}}%
+  \@ifclassloaded{extarticle}{}{%
+    \PackageWarningNoLine{knu-fcc-style}{Recommended document class: \string\documentclass[14pt]{extarticle}}%
+  }%
+}
+\makeatother
+

@@ -1,0 +1,12 @@
+{
+  "source": "Federal Reserve Economic Data (FRED), SP500 daily close series",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500&cos=Close&coed=20261231",
+  "symbol": "SP500",
+  "requested_start": "20161107",
+  "requested_end": "20261231",
+  "downloaded_utc": "2026-11-08T17:35:29.885716+00:00",
+  "rows": 2513,
+  "first_date": "2016-11-07",
+  "last_date": "2026-11-05",
+  "sha256": "fc1b01f4ac39919d88de00c706ac178b2809f868ccbbe2bd830a6f9f67c854f6"
+}
