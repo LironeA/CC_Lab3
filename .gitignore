@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 results/
+bin/
 report/*.aux
 report/*.fdb_latexmk
 report/*.fls

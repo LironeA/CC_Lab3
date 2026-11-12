@@ -1,44 +1,41 @@
-# Лабораторна №3 — паралельний прогноз біржових котирувань
+# Лабораторна №3 — OpenMP-прогноз біржових котирувань
 
-Проєкт виконує однокроковий прогноз денних цін закриття індексу S\&P 500 за простим рухомим середнім (SMA) та лінійно зваженим рухомим середнім (WMA). Розрахунок похибок і прогнозів розподілено між MPI-процесами; запуск виконується через Slurm-кластер з Lab1--Lab2.
+Локальний C++17/OpenMP-проєкт для однокрокового прогнозування денного індексу S\&P 500 за простим (SMA) і лінійно зваженим (WMA) рухомими середніми. Розрахунки виконуються спільною пам'яттю на ядрах одного ПК; MPI, Slurm і віртуальні машини не використовуються.
 
-## Дані та методика
+## Дані та модель
 
-`scripts/prepare_data.bash` завантажує денний ряд `SP500` із Federal Reserve Economic Data (FRED) за 2016--2026 роки. Це допустимий десятирічний інтервал із умови. У `data/input/quotes_metadata.json` зберігаються URL, часові межі, кількість точок та SHA-256 CSV. Для прогнозу в момент $t$ використовуються лише ціни $t-N,...,t-1$; останні 20\% ряду є тестовою вибіркою. Оцінюються MAE, RMSE і MAPE. Вікна: 5, 10, 20, 30, 60, 120, 252 торгових дні.
+`data/input/quotes.csv` містить 2513 денних значень індексу S\&P 500 за 2016--2026 роки, одержаних із FRED. Метадані, URL і SHA-256 наведено в `data/input/quotes_metadata.json`. Останні 20\% ряду є тестовою частиною. Оцінюються MAE, RMSE та MAPE для вікон 5, 10, 20, 30, 60, 120 і 252 торгових дні.
 
-У WMA найновіша ціна має вагу $N$, а найдавніша --- 1. Найкраще вікно для кожного методу визначається мінімумом MAE на тестовій частині. Прогноз наступного кроку та найкращі параметри записуються до `summary.json`.
+Усі OpenMP-потоки працюють з одним спільним масивом цін. Директива `#pragma omp parallel for` розподіляє незалежні прогнози для різних тестових дат між потоками, а `reduction` об'єднує локальні суми похибок.
 
-## Розгортання та запуск
+## Збірка та запуск
+
+Потрібен MinGW-w64 `g++` із підтримкою OpenMP. У поточному середовищі використано GCC 13.2.0.
 
 ```powershell
 cd D:\CSC\6th\S1\CC\Lab3
-.\windows\deploy.ps1
+.\scripts\build.ps1
+.\bin\forecast_omp.exe --quotes data\input\quotes.csv --output-dir results\manual --threads 4 --timing-passes 100000
 ```
 
-На controller:
-
-```bash
-cd /shared/lab3-market-forecast
-python3 -m pip install --user -r requirements.txt
-scripts/prepare_data.bash
-scripts/run_experiment.bash --nodes 1 --repeat 0 --tag validation
-scripts/run_experiment.bash --nodes 2 --repeat 0 --tag validation
-# Передайте два створені каталоги до validate.bash.
-scripts/benchmark.bash --repetitions 3 --nodes '1 2 3 4'
-scripts/export_metrics.bash
-```
-
-`TIMING_PASSES=10000` у `config/experiment.conf` повторює однакове обчислювальне ядро в межах одного виміру. Зведення MPI виконується один раз після серії проходів, тому вимірюється прогнозне обчислення, а не затримка мережі. Це необхідно, бо один прохід над приблизно 2.5 тис. денних значень замалий для достовірного вимірювання MPI-масштабування. Завантаження CSV, очікування у черзі Slurm і запис результатів не входять до вимірюваного інтервалу.
-
-Після `windows/deploy.ps1 -ExportResults` локально:
+Для повного benchmark на 14 фізичних ядрах Intel Core i5-14600K:
 
 ```powershell
+.\scripts\benchmark.ps1 -Threads (1..14) -Repetitions 3 -TimingPasses 100000
 py -m pip install -r local\requirements.txt
-py local\analyze_results.py D:\CSC\6th\S1\CC\claster\exchange\output
+py local\analyze_results.py results
 ```
 
-Отримуються `metrics/aggregate.csv` і графіки `execution_time.png`, `speedup.png`, `efficiency.png`, `forecast_mae.png`.
+`results/metrics/aggregate.csv` містить медіани часу, прискорення й ефективність. Графіки створюються в `results/figures/`.
 
 ## Перевірка
 
-`scripts/validate.bash RUN_N1 RUN_N2` порівнює MAE, RMSE і MAPE між послідовним та паралельним запуском з точністю `1e-9`. Перевірка Bash: `bash -n scripts/*.bash slurm/*.sbatch`.
+Метрики для різної кількості потоків мають збігатися:
+
+```powershell
+.\scripts\validate.ps1 -Run1 results\raw\RUN_T1 -Run2 results\raw\RUN_T14
+```
+
+## Звіт
+
+Звіт і зібраний PDF: `report/main.tex`, `report/main.pdf`. Він використовує шаблон із `D:\CSC\Template`.

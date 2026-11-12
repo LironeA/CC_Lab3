@@ -1,27 +1,17 @@
 # Команди виконання
 
 ```powershell
-cd D:\CSC\6th\S1\CC\claster
-.\cluster.ps1 -Action start
 cd D:\CSC\6th\S1\CC\Lab3
-.\windows\deploy.ps1
-```
-
-```bash
-cd /shared/lab3-market-forecast
-python3 -m pip install --user -r requirements.txt
-scripts/prepare_data.bash
-scripts/run_experiment.bash --nodes 1 --repeat 0 --tag validation
-scripts/run_experiment.bash --nodes 2 --repeat 0 --tag validation
-scripts/validate.bash results/raw/VALIDATION_N1 results/raw/VALIDATION_N2
-scripts/benchmark.bash --repetitions 3
-scripts/export_metrics.bash
+.\scripts\build.ps1
+.\scripts\benchmark.ps1 -Threads (1..14) -Repetitions 3 -TimingPasses 100000
+py -m pip install -r local\requirements.txt
+py local\analyze_results.py results
 ```
 
 ```powershell
-.\windows\deploy.ps1 -ExportResults
-py -m pip install -r local\requirements.txt
-py local\analyze_results.py D:\CSC\6th\S1\CC\claster\exchange\output
+$t1 = (Get-ChildItem results\raw -Directory | Where-Object Name -like 'benchmark_t1_r1_*').FullName
+$t14 = (Get-ChildItem results\raw -Directory | Where-Object Name -like 'benchmark_t14_r1_*').FullName
+.\scripts\validate.ps1 -Run1 $t1 -Run2 $t14
 cd report
 latexmk -xelatex -synctex=1 -interaction=nonstopmode -file-line-error main.tex
 ```
